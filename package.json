@@ -1,0 +1,62 @@
+{
+  "name": "dither-art",
+  "version": "1.0.0",
+  "description": "Seeded 1-bit dithered artwork: mountains, seas, dunes, planets and more, drawn from any string. Zero dependencies.",
+  "keywords": [
+    "dither",
+    "dithering",
+    "1-bit",
+    "generative",
+    "procedural",
+    "art",
+    "placeholder",
+    "svg",
+    "seed",
+    "deterministic",
+    "bayer",
+    "blue-noise",
+    "floyd-steinberg",
+    "atkinson"
+  ],
+  "homepage": "https://github.com/PG-Momik/dither-art#readme",
+  "bugs": "https://github.com/PG-Momik/dither-art/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PG-Momik/dither-art.git"
+  },
+  "license": "MIT",
+  "author": "Momik Shrestha",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.check.json --noUnusedLocals --noUnusedParameters",
+    "snapshot": "npm run build && node scripts/snapshot.mjs",
+    "gallery": "npm run build && node scripts/gallery.mjs",
+    "site": "npm run build && node -e \"require('fs').cpSync('dist', 'site/lib', { recursive: true })\"",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run typecheck && npm test && npm run snapshot"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "vitest": "^1.4.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
