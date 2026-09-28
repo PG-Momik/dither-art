@@ -176,20 +176,24 @@ a {
 }
 
 /* It sits among plain links, so it drops the button chrome and signals state by colour. */
+/* Recognisability beats novelty on a control nobody is looking for: sun, moon, and a
+   monitor for "follow the system". It keeps its border so it reads as a button, not decoration. */
 #theme {
-  background: none;
-  border-color: transparent;
   border-radius: 9px;
 }
-
-/* One mark for all three states: an empty disc for light, a filled one for dark, half for system. */
-#theme .half,
-#theme .full {
+#theme svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#theme > svg {
   display: none;
 }
-
-#theme[data-mode="system"] .half,
-#theme[data-mode="dark"] .full {
+#theme[data-mode="system"] .ico-auto,
+#theme[data-mode="light"] .ico-sun,
+#theme[data-mode="dark"] .ico-moon {
   display: block;
 }
 
