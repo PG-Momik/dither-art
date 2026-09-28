@@ -11,7 +11,7 @@ every user, post, product or college its own cover art without storing an image.
 - **Deterministic everywhere**: tested to draw identical pixels on Node, Bun and Deno
 - **Zero dependencies**, about 6 KB minified and gzipped, TypeScript types included (TypeScript 5.7 or later)
 
-**[Website](https://dither-art.momik.dev/) · [Playground](https://dither-art.momik.dev/playground/)**
+**[Website](https://dither-art.momik.dev/) · [API reference](https://dither-art.momik.dev/docs/) · [Playground](https://dither-art.momik.dev/playground/)**
 
 ## Install
 

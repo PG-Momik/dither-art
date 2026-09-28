@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>API reference · dither-art</title>
+    <meta
+      name="description"
+      content="Full API reference for dither-art: ditherPixels, toSVG, toRGBA, dither, the six scenes, the four dithering methods, and how to write your own scene."
+    />
+    <link rel="canonical" href="https://dither-art.momik.dev/docs/" />
+    <meta property="og:title" content="dither-art API reference" />
+    <meta property="og:description" content="Every function, option and type, with live examples." />
+    <meta property="og:image" content="https://dither-art.momik.dev/og.png" />
+    <meta property="og:url" content="https://dither-art.momik.dev/docs/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM2 2h1v1H2zM1 3h1v1H1zM3 3h1v1H3z'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="../base.css" />
+    <style>
+      .doc {
+        display: grid;
+        grid-template-columns: 200px minmax(0, 1fr);
+        gap: 56px;
+        padding-bottom: 40px;
+      }
+      /* The contents column tracks the reader instead of making them scroll back up. */
+      .toc {
+        display: block;
+        position: sticky;
+        top: 0;
+        align-self: start;
+        max-height: 100vh;
+        padding: 24px 0 24px;
+        overflow-y: auto;
+        font-size: 13px;
+      }
+      .toc h2 {
+        margin: 0 0 10px;
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .toc ul {
+        margin: 0 0 18px;
+        padding: 0;
+        list-style: none;
+      }
+      .toc li + li {
+        margin-top: 7px;
+      }
+      .toc a {
+        display: block;
+        color: var(--muted);
+        text-decoration: none;
+        border-left: 2px solid transparent;
+        padding-left: 10px;
+        margin-left: -12px;
+        transition:
+          color var(--step),
+          border-color var(--step);
+      }
+      .toc a:hover {
+        color: var(--ink);
+      }
+      .toc a.current {
+        color: var(--ink);
+        border-left-color: var(--accent);
+      }
+      .content {
+        padding-top: 24px;
+        min-width: 0;
+      }
+      .content > section {
+        padding: 0 0 56px;
+        scroll-margin-top: 20px;
+      }
+      .lede {
+        max-width: 68ch;
+        margin: 0 0 28px;
+        color: var(--muted);
+        text-wrap: pretty;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-size: clamp(30px, 5vw, 42px);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+      h2 {
+        margin: 0 0 4px;
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      h3 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      p {
+        max-width: 72ch;
+        text-wrap: pretty;
+      }
+      .note {
+        max-width: 72ch;
+        margin: 0 0 24px;
+        color: var(--muted);
+      }
+      /* One API entry: signature, prose, then the parameters as a definition list. */
+      .entry {
+        padding: 22px 0 4px;
+        border-top: 1px solid var(--line);
+      }
+      .entry + .entry {
+        margin-top: 8px;
+      }
+      .sig {
+        display: block;
+        margin: 0 0 10px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--field);
+        font-size: 14px;
+        /* Signatures wrap rather than scroll: a reference is read, not dragged sideways. */
+        white-space: pre-wrap;
+      }
+      dl {
+        margin: 16px 0 0;
+        max-width: 72ch;
+      }
+      dt {
+        margin-top: 14px;
+        font-size: 14px;
+      }
+      dt .type {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      dd {
+        margin: 3px 0 0;
+        padding-left: 18px;
+        border-left: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 14px;
+      }
+      dd code {
+        color: var(--ink);
+      }
+      .returns {
+        margin: 18px 0 0;
+        padding: 12px 14px;
+        border-left: 2px solid var(--accent);
+        background: var(--paper-sunk);
+        font-size: 14px;
+        max-width: 72ch;
+      }
+      .returns b {
+        font-weight: 600;
+      }
+      pre {
+        margin: 16px 0 0;
+      }
+      .gallery {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 20px;
+      }
+      .gallery.pair {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      figure {
+        margin: 0;
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        overflow: hidden;
+        background: var(--field);
+      }
+      figure canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1 / var(--ratio, 0.62);
+        background: var(--paper-sunk);
+        image-rendering: pixelated;
+      }
+      figcaption {
+        padding: 7px 10px;
+        border-top: 1px solid var(--line);
+        font-size: 13px;
+      }
+      figcaption b {
+        font-weight: 500;
+      }
+      figcaption span {
+        display: block;
+        color: var(--muted);
+      }
+      table {
+        width: 100%;
+        margin-top: 18px;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+      th,
+      td {
+        padding: 9px 12px 9px 0;
+        text-align: left;
+        vertical-align: top;
+        border-bottom: 1px solid var(--line);
+      }
+      th {
+        font-weight: 600;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      td code {
+        white-space: nowrap;
+      }
+      .exports dt code {
+        color: var(--code-fn);
+      }
+      @media (max-width: 900px) {
+        .doc {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 0;
+        }
+        .toc {
+          position: static;
+          max-height: none;
+          padding: 16px 0 8px;
+          border-bottom: 1px solid var(--line);
+        }
+        .toc ul {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px 18px;
+          margin-bottom: 12px;
+        }
+        .toc li + li {
+          margin-top: 0;
+        }
+        .toc a {
+          border-left: 0;
+          padding-left: 0;
+          margin-left: 0;
+        }
+        .toc a.current {
+          border-left: 0;
+          color: var(--accent);
+        }
+        .gallery,
+        .gallery.pair {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="wrap">
+      <nav class="topnav">
+        <strong><a href="../" style="text-decoration: none">dither-art</a></strong>
+        <div class="links">
+          <a href="../">Home</a>
+          <a href="../playground/">Playground</a>
+          <a href="./" aria-current="page">Docs</a>
+          <a class="icon icon-npm" href="https://www.npmjs.com/package/dither-art" aria-label="dither-art on npm" title="npm">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M0 7.334v8h6.666v1.332H12v-1.332h12v-8H0zm6.666 6.664H5.334v-4H3.999v4H1.335V8.667h5.331v5.331zm4 0v1.336H8.001V8.667h5.334v5.332h-2.669v-.001zm12.001 0h-1.33v-4h-1.336v4h-1.335v-4h-1.33v4h-2.671V8.667h8.002v5.331zM10.665 10H12v2.667h-1.335V10z" />
+            </svg>
+          </a>
+          <a class="icon" href="https://github.com/PG-Momik/dither-art" aria-label="dither-art on GitHub" title="GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+            </svg>
+          </a>
+          <button class="icon" type="button" id="theme" data-mode="system" aria-label="Colour theme: system" title="Colour theme: system">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" />
+              <path class="half" d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" />
+              <circle class="full" cx="12" cy="12" r="9" fill="currentColor" />
+            </svg>
+          </button>
+        </div>
+      </nav>
+
+      <div class="doc">
+        <nav class="toc" aria-label="On this page">
+          <h2>Getting started</h2>
+          <ul>
+            <li><a href="#install">Install</a></li>
+            <li><a href="#quick-start">Quick start</a></li>
+          </ul>
+          <h2>Functions</h2>
+          <ul>
+            <li><a href="#ditherpixels">ditherPixels</a></li>
+            <li><a href="#tosvg">toSVG</a></li>
+            <li><a href="#torgba">toRGBA</a></li>
+            <li><a href="#dither">dither</a></li>
+          </ul>
+          <h2>Pictures</h2>
+          <ul>
+            <li><a href="#scenes">Scenes</a></li>
+            <li><a href="#methods">Methods</a></li>
+            <li><a href="#own-scene">Your own scene</a></li>
+          </ul>
+          <h2>Reference</h2>
+          <ul>
+            <li><a href="#exports">Other exports</a></li>
+            <li><a href="#types">Types</a></li>
+            <li><a href="#recipes">Recipes</a></li>
+            <li><a href="#performance">Size and speed</a></li>
+            <li><a href="#stability">Stability</a></li>
+          </ul>
+        </nav>
+
+        <main class="content" id="main">
+          <h1>API reference</h1>
+          <p class="lede">
+            Every function, option and type in dither-art, with the exact errors each one throws. Pictures on this
+            page are drawn in your browser by the same build the package ships.
+          </p>
+
+          <section id="install" aria-labelledby="install-h">
+            <h2 id="install-h">Install</h2>
+            <p class="note">ESM only. Node 18 or later, or any modern browser, Bun, Deno or edge runtime.</p>
+            <pre><code class="lang-bash">npm install dither-art</code></pre>
+          </section>
+
+          <section id="quick-start" aria-labelledby="quick-h">
+            <h2 id="quick-h">Quick start</h2>
+            <p class="note">
+              Draw a grid of pixels from a seed, then turn it into whatever your target needs. The same seed and size
+              always give the same pixels.
+            </p>
+            <pre><code class="lang-ts">import { ditherPixels, toSVG } from "dither-art";
+
+const pixels = ditherPixels(320, 180, "my-seed"); // Uint8Array, 1 = ink, 0 = paper
+const svg = toSVG(pixels, 320, 180); // ink is currentColor, paper is transparent
+
+document.querySelector("#cover").innerHTML = svg;</code></pre>
+            <p class="note" style="margin-top: 16px">
+              Ink defaults to <code>currentColor</code>, so the picture takes the colour of the text around it and
+              follows dark mode with no extra work.
+            </p>
+            <pre><code class="lang-css">#cover { color: var(--accent); }
+#cover svg { width: 100%; height: auto; }</code></pre>
+          </section>
+
+          <section id="ditherpixels" aria-labelledby="dp-h">
+            <h2 id="dp-h">ditherPixels</h2>
+            <p class="note">The main entry point: seed in, pixels out.</p>
+
+            <div class="entry">
+              <code class="sig">ditherPixels(width: number, height: number, seed: string, options?: DitherOptions): Uint8Array</code>
+              <p>
+                Draws a picture and dithers it to one bit per pixel. Sizes are floored to whole numbers and clamped to
+                at least 1, so <code>ditherPixels(10.9, 5.2, s)</code> gives a 10 × 5 picture.
+              </p>
+              <dl>
+                <dt><code>width</code>, <code>height</code> <span class="type">number</span></dt>
+                <dd>Size in pixels. Throws <code>RangeError</code> for <code>NaN</code> or <code>Infinity</code>.</dd>
+                <dt><code>seed</code> <span class="type">string</span></dt>
+                <dd>Any string. The same seed gives the same picture, on every runtime.</dd>
+                <dt><code>options.scene</code> <span class="type">DitherScene | Scene</span></dt>
+                <dd>A built-in name or your own function. Default: chosen from the seed.</dd>
+                <dt><code>options.method</code> <span class="type">DitherMethod</span></dt>
+                <dd>How grey becomes 1-bit. Default <code>"bayer"</code>.</dd>
+                <dt><code>options.density</code> <span class="type">number</span></dt>
+                <dd>
+                  Ink multiplier. Default <code>1</code>. Zero, negative or <code>NaN</code> gives a blank picture
+                  rather than throwing.
+                </dd>
+              </dl>
+              <p class="returns">
+                <b>Returns</b> a <code>Uint8Array</code> of <code>width * height</code> values, row by row:
+                <code>1</code> is ink, <code>0</code> is paper.<br />
+                <b>Throws</b> <code>RangeError</code> for a non-finite size, and <code>TypeError</code> for an unknown
+                scene or method name — the message lists the valid ones.
+              </p>
+            </div>
+          </section>
+
+          <section id="tosvg" aria-labelledby="svg-h">
+            <h2 id="svg-h">toSVG</h2>
+            <div class="entry">
+              <code class="sig">toSVG(pixels: ArrayLike&lt;number&gt;, width: number, height: number, options?: SvgOptions): string</code>
+              <p>
+                Returns an SVG string: one <code>path</code> per row tracing each run of ink as a one-pixel stroke, in
+                relative steps, with <code>shape-rendering="crispEdges"</code>. It scales to any size without blurring
+                and can go straight into HTML, an image route, or a data URL.
+              </p>
+              <dl>
+                <dt><code>options.ink</code> <span class="type">string</span></dt>
+                <dd>Any CSS colour. Default <code>"currentColor"</code>.</dd>
+                <dt><code>options.paper</code> <span class="type">string</span></dt>
+                <dd>Background colour. Default: none, so the paper is transparent.</dd>
+                <dt><code>options.scale</code> <span class="type">number</span></dt>
+                <dd>Displayed pixels per picture pixel, written into the width and height attributes. Default <code>1</code>.</dd>
+                <dt><code>options.title</code> <span class="type">string</span></dt>
+                <dd>An accessible name. Without one the SVG is marked <code>aria-hidden="true"</code> as decoration.</dd>
+              </dl>
+              <p class="returns">
+                <b>Size.</b> Dithered pictures are busy: expect roughly 40–100 KB for 320 × 180, which compresses to
+                3–6 KB with the gzip or Brotli your server or CDN already applies.
+              </p>
+            </div>
+          </section>
+
+          <section id="torgba" aria-labelledby="rgba-h">
+            <h2 id="rgba-h">toRGBA</h2>
+            <div class="entry">
+              <code class="sig">toRGBA(pixels: ArrayLike&lt;number&gt;, options?: RgbaOptions): Uint8ClampedArray</code>
+              <p>Turns the pixels into RGBA bytes, ready for a canvas.</p>
+              <dl>
+                <dt><code>options.ink</code> <span class="type">Colour</span></dt>
+                <dd>
+                  <code>"#rgb"</code>, <code>"#rgba"</code>, <code>"#rrggbb"</code>, <code>"#rrggbbaa"</code> or
+                  <code>[r, g, b, a?]</code> with channels 0–255. Default <code>"#000"</code>.
+                </dd>
+                <dt><code>options.paper</code> <span class="type">Colour</span></dt>
+                <dd>Same formats. Default: transparent.</dd>
+              </dl>
+              <p class="returns"><b>Returns</b> a <code>Uint8ClampedArray</code> of 4 bytes per pixel.</p>
+              <pre><code class="lang-ts">const rgba = toRGBA(pixels, { ink: "#c41e3a", paper: "#fdf6e3" });
+ctx.putImageData(new ImageData(rgba, width, height), 0, 0);</code></pre>
+            </div>
+          </section>
+
+          <section id="dither" aria-labelledby="d-h">
+            <h2 id="d-h">dither</h2>
+            <div class="entry">
+              <code class="sig">dither(ink: ArrayLike&lt;number&gt;, width: number, height: number, method?: DitherMethod): Uint8Array</code>
+              <p>
+                Dithers your own grid of ink amounts, so you can run a photo, a gradient or any greyscale field
+                through the same methods. Values outside 0–1 are clamped, and <code>NaN</code> counts as paper.
+              </p>
+              <p class="returns">
+                <b>Throws</b> <code>RangeError</code> when <code>ink.length</code> is not
+                <code>width * height</code> — the message states both numbers.
+              </p>
+            </div>
+          </section>
+
+          <section id="scenes" aria-labelledby="scenes-h">
+            <h2 id="scenes-h">Scenes</h2>
+            <p class="note">
+              Six built-ins. Leave <code>scene</code> out and the seed picks one; <code>sceneForSeed(seed)</code>
+              tells you which it would choose. Every picture below is the seed <code>"docs"</code>.
+            </p>
+            <div class="gallery" id="scene-gallery"></div>
+          </section>
+
+          <section id="methods" aria-labelledby="methods-h">
+            <h2 id="methods-h">Dithering methods</h2>
+            <p class="note">
+              One bit per pixel means every pixel is ink or paper. The greys are an illusion made of dots, and these
+              are four ways to arrange them. Same seed and scene throughout.
+            </p>
+            <div class="gallery pair" id="method-gallery"></div>
+            <table>
+              <thead>
+                <tr><th>Method</th><th>Look</th><th>Behaviour</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>"bayer"</code></td>
+                  <td>Regular crosshatch, retro</td>
+                  <td>The default. The grain stays put when the size changes.</td>
+                </tr>
+                <tr>
+                  <td><code>"blue-noise"</code></td>
+                  <td>Fine, even grain with no pattern</td>
+                  <td>Same stability as Bayer. The 64 × 64 map is built on first use, in under 100 ms.</td>
+                </tr>
+                <tr>
+                  <td><code>"floyd-steinberg"</code></td>
+                  <td>Smooth tones, most detail</td>
+                  <td>Error diffusion: the grain reshuffles when the size changes.</td>
+                </tr>
+                <tr>
+                  <td><code>"atkinson"</code></td>
+                  <td>Crisp and contrasty, like the original Macintosh</td>
+                  <td>Error diffusion. Very light and very dark areas go solid.</td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section id="own-scene" aria-labelledby="own-h">
+            <h2 id="own-h">Your own scene</h2>
+            <p class="note">
+              A scene receives seeded randomness and the picture's shape, and returns the ink amount at every point.
+              <code>x</code> runs from 0 to <code>aspect</code> (width / height) and <code>y</code> from 0 at the top
+              to 1 at the bottom, so a scene is resolution-independent.
+            </p>
+            <pre><code class="lang-ts">import { ditherPixels, type Scene } from "dither-art";
+
+const halo: Scene = (rand, { aspect, pixel }) => {
+  const cx = aspect * (0.3 + rand() * 0.4);
+  const r = 0.25 + rand() * 0.1;
+  return (x, y) => {
+    const d = Math.hypot(x - cx, y - 0.5);
+    if (Math.abs(d - r) &lt; Math.max(0.01, pixel)) return 1; // a ring at least a pixel wide
+    return d &lt; r ? 0.15 : Math.min(1, (d - r) * 1.5);
+  };
+};
+
+const pixels = ditherPixels(320, 180, "my-seed", { scene: halo });</code></pre>
+            <div class="gallery" id="halo-gallery"></div>
+            <dl>
+              <dt><code>rand</code> <span class="type">() =&gt; number</span></dt>
+              <dd>Seeded generator in <code>[0, 1)</code>. Call it the same number of times for the same picture.</dd>
+              <dt><code>context.aspect</code> <span class="type">number</span></dt>
+              <dd>Width / height. The field's <code>x</code> runs from 0 to this.</dd>
+              <dt><code>context.pixel</code> <span class="type">number</span></dt>
+              <dd>
+                The size of one output pixel in field units (<code>1 / height</code>). Use it to keep lines and dots
+                at least a pixel wide so small sizes stay readable.
+              </dd>
+            </dl>
+          </section>
+
+          <section id="exports" aria-labelledby="exp-h">
+            <h2 id="exp-h">Other exports</h2>
+            <dl class="exports">
+              <dt><code>sceneForSeed(seed)</code></dt>
+              <dd>The scene a seed gets when none is given.</dd>
+              <dt><code>ridges</code>, <code>orbs</code>, <code>contours</code>, <code>sea</code>, <code>dunes</code>, <code>planet</code></dt>
+              <dd>The built-in scenes as <code>Scene</code> functions, to wrap or combine.</dd>
+              <dt><code>hashSeed(string)</code></dt>
+              <dd>FNV-1a 32-bit hash. <code>hashSeed("abc")</code> is <code>440920331</code>.</dd>
+              <dt><code>seededRandom(seed)</code></dt>
+              <dd>A mulberry32 generator of numbers in <code>[0, 1)</code>, from a 32-bit integer seed.</dd>
+              <dt><code>blueNoiseMap()</code></dt>
+              <dd>The 64 × 64 blue-noise threshold map: a <code>Float32Array</code> of 4096 values in (0, 1).</dd>
+              <dt><code>BAYER</code></dt>
+              <dd>The 8 × 8 Bayer thresholds: 64 numbers in (0, 1), row by row.</dd>
+              <dt><code>DITHER_SCENES</code>, <code>DITHER_METHODS</code></dt>
+              <dd>The scene and method names, as readonly arrays.</dd>
+            </dl>
+          </section>
+
+          <section id="types" aria-labelledby="types-h">
+            <h2 id="types-h">Types</h2>
+            <p class="note">TypeScript 5.7 or later. All types are exported from the package root.</p>
+            <pre><code class="lang-ts">type DitherScene = "ridges" | "orbs" | "contours" | "sea" | "dunes" | "planet";
+type DitherMethod = "bayer" | "blue-noise" | "floyd-steinberg" | "atkinson";
+
+type Field = (x: number, y: number) =&gt; number;
+type Scene = (rand: () =&gt; number, context: SceneContext) =&gt; Field;
+
+interface SceneContext { aspect: number; pixel: number }
+interface DitherOptions { scene?: DitherScene | Scene; density?: number; method?: DitherMethod }
+interface SvgOptions { ink?: string; paper?: string; scale?: number; title?: string }
+interface RgbaOptions { ink?: Colour; paper?: Colour }
+
+type Colour = string | readonly [number, number, number, number?];</code></pre>
+          </section>
+
+          <section id="recipes" aria-labelledby="rec-h">
+            <h2 id="rec-h">Recipes</h2>
+
+            <div class="entry">
+              <h3>Canvas</h3>
+              <pre><code class="lang-ts">const [w, h] = [320, 180];
+canvas.width = w;
+canvas.height = h;
+canvas.style.imageRendering = "pixelated";
+
+const pixels = ditherPixels(w, h, "my-seed", { method: "atkinson" });
+const rgba = toRGBA(pixels, { ink: "#c41e3a", paper: "#fdf6e3" });
+canvas.getContext("2d").putImageData(new ImageData(rgba, w, h), 0, 0);</code></pre>
+            </div>
+
+            <div class="entry">
+              <h3>Server-rendered image route</h3>
+              <pre><code class="lang-ts">const pixels = ditherPixels(600, 315, `post-${id}`);
+
+return new Response(toSVG(pixels, 600, 315, { ink: "#111", paper: "#fff", title: "Cover art" }), {
+  headers: {
+    "content-type": "image/svg+xml",
+    "cache-control": "public, max-age=31536000, immutable",
+  },
+});</code></pre>
+              <p class="note" style="margin-top: 14px">
+                The picture is a pure function of the seed, so it is safe to cache forever.
+              </p>
+            </div>
+
+            <div class="entry">
+              <h3>Dither your own image</h3>
+              <pre><code class="lang-ts">const { data, width, height } = ctx.getImageData(0, 0, canvas.width, canvas.height);
+const ink = new Float32Array(width * height);
+
+for (let i = 0; i &lt; ink.length; i++) {
+  const [r, g, b] = [data[i * 4], data[i * 4 + 1], data[i * 4 + 2]];
+  ink[i] = 1 - (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255; // brightness to ink
+}
+
+const pixels = dither(ink, width, height, "floyd-steinberg");
+ctx.putImageData(new ImageData(toRGBA(pixels), width, height), 0, 0);</code></pre>
+            </div>
+          </section>
+
+          <section id="performance" aria-labelledby="perf-h">
+            <h2 id="perf-h">Size and speed</h2>
+            <p class="note">
+              Scenes are drawn in proportional coordinates, so any size and aspect ratio works. Lines, outlines and
+              stars are kept at least one pixel wide, so small pictures stay readable; from about 240 px across, each
+              scene shows its full detail.
+            </p>
+            <table>
+              <thead>
+                <tr><th>Size</th><th>Time to draw</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>400 × 200</code></td><td>10–35 ms</td></tr>
+                <tr><td><code>1920 × 1080</code></td><td>110–420 ms</td></tr>
+              </tbody>
+            </table>
+            <p class="note" style="margin-top: 20px">
+              Drawing is synchronous, so for large or crisp retro pictures, draw small and scale up without smoothing.
+              It is faster and it looks better.
+            </p>
+            <pre><code class="lang-ts">// 1280 × 720 on screen, 320 × 180 actual pixels
+const svg = toSVG(ditherPixels(320, 180, seed), 320, 180, { scale: 4 });</code></pre>
+            <p class="note" style="margin-top: 16px">
+              For many pictures at once, render them in a Web Worker, or once on the server, and cache the result.
+            </p>
+          </section>
+
+          <section id="stability" aria-labelledby="stab-h">
+            <h2 id="stab-h">Stability</h2>
+            <p class="note">
+              Pictures are part of the API. Within a major version, a seed, size, scene and method always draw exactly
+              the same pixels. The test suite pins a hash of every scene and method, and CI checks them on Node 18–22,
+              Bun and Deno. Any change to how pictures look is a major release.
+            </p>
+            <p class="note">
+              Leaving <code>scene</code> out lets the seed choose from all scenes, so adding a scene in a later major
+              version can change which scene a seed gets. Pass <code>scene</code> explicitly if a picture must never
+              change across major versions.
+            </p>
+          </section>
+        </main>
+      </div>
+
+      <nav aria-label="Project links">
+        <ul class="endlinks">
+          <li><a href="../">Home</a></li>
+          <li><a href="https://github.com/PG-Momik/dither-art">Source</a></li>
+          <li><a href="https://github.com/PG-Momik/dither-art/blob/main/CHANGELOG.md">Changelog</a></li>
+          <li><a href="https://github.com/PG-Momik/dither-art/issues">Report an issue</a></li>
+        </ul>
+      </nav>
+
+      <footer>
+        <span>Built with purpose</span>
+        <span><a href="https://momik.dev">Momik Shrestha</a></span>
+        <span>Released under the <a href="https://github.com/PG-Momik/dither-art/blob/main/LICENSE">MIT License</a>.</span>
+      </footer>
+    </div>
+
+    <script type="module">
+      import { ditherPixels, toRGBA, DITHER_SCENES, DITHER_METHODS } from "../lib/index.js";
+
+      /* ---------------------------------------------------------------- code colouring
+         The landing page marks its one snippet up by hand; a reference page has twenty, so
+         they are tokenised here instead. Comments and strings are matched first, so a // or
+         a keyword inside a string is never mistaken for code. */
+      const KEYWORDS = new Set([
+        "import", "export", "from", "const", "let", "var", "function", "return", "new", "type",
+        "interface", "await", "async", "if", "else", "for", "of", "in", "typeof", "as", "default",
+        "class", "extends", "throw", "try", "catch", "readonly",
+      ]);
+      const TOKEN =
+        /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|(`(?:\\.|[^`\\])*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][\w$]*)|([{}()[\];,.:=<>+\-*/!?&|%])/g;
+      const escape = (text) => text.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+      const wrap = (cls, text) => `<span class="${cls}">${escape(text)}</span>`;
+
+      const highlight = (source) => {
+        let out = "";
+        let last = 0;
+        for (const match of source.matchAll(TOKEN)) {
+          const [text, comment, string, number, word, punctuation] = match;
+          out += escape(source.slice(last, match.index));
+          last = match.index + text.length;
+          if (comment) out += wrap("tok-mut", text);
+          else if (string) out += wrap("tok-str", text);
+          else if (number) out += wrap("tok-num", text);
+          else if (word) {
+            const isCall = source[last] === "(";
+            out += KEYWORDS.has(word) ? wrap("tok-key", text) : isCall ? wrap("tok-fn", text) : escape(text);
+          } else if (punctuation) out += wrap("tok-mut", text);
+        }
+        return out + escape(source.slice(last));
+      };
+
+      for (const block of document.querySelectorAll("code.lang-ts, code.lang-js, .sig")) {
+        block.innerHTML = highlight(block.textContent);
+      }
+      for (const block of document.querySelectorAll("code.lang-bash")) {
+        block.innerHTML = `<span class="tok-mut">$ </span>${escape(block.textContent)}`;
+      }
+
+      /* ---------------------------------------------------------------- live pictures */
+      const theme = () => {
+        const css = getComputedStyle(document.documentElement);
+        return { ink: css.getPropertyValue("--ink").trim(), paper: css.getPropertyValue("--paper").trim() };
+      };
+
+      const figure = (container, label, note) => {
+        const fig = document.createElement("figure");
+        const canvas = document.createElement("canvas");
+        const caption = document.createElement("figcaption");
+        const name = document.createElement("b");
+        name.textContent = label;
+        const span = document.createElement("span");
+        span.textContent = note;
+        caption.append(name, span);
+        fig.append(canvas, caption);
+        container.append(fig);
+        return canvas;
+      };
+
+      const draw = (canvas, seed, options) => {
+        const ratio = parseFloat(getComputedStyle(canvas).getPropertyValue("--ratio")) || 0.62;
+        const width = Math.max(40, Math.floor(canvas.parentElement.clientWidth / 2));
+        const height = Math.max(24, Math.round(width * ratio));
+        canvas.width = width;
+        canvas.height = height;
+        const rgba = toRGBA(ditherPixels(width, height, seed, options), theme());
+        canvas.getContext("2d").putImageData(new ImageData(rgba, width, height), 0, 0);
+      };
+
+      const SCENE_NOTES = {
+        ridges: "mountain ranges under a sun",
+        orbs: "lit spheres with shadows",
+        contours: "a survey map with hillshading",
+        sea: "a night sea with moonlit glints",
+        dunes: "dunes with slip-face shadows",
+        planet: "a banded, ringed planet",
+      };
+      const METHOD_NOTES = {
+        bayer: "ordered 8x8 grid, the default",
+        "blue-noise": "scattered threshold, no grid",
+        "floyd-steinberg": "error diffusion, finest detail",
+        atkinson: "diffusion with less spill",
+      };
+
+      // The scene from the "your own scene" snippet, run for real so the code above is not just a claim.
+      const halo = (rand, { aspect, pixel }) => {
+        const cx = aspect * (0.3 + rand() * 0.4);
+        const r = 0.25 + rand() * 0.1;
+        return (x, y) => {
+          const d = Math.hypot(x - cx, y - 0.5);
+          if (Math.abs(d - r) < Math.max(0.01, pixel)) return 1;
+          return d < r ? 0.15 : Math.min(1, (d - r) * 1.5);
+        };
+      };
+
+      const panels = [
+        ...DITHER_SCENES.map((scene) => ({
+          canvas: figure(document.getElementById("scene-gallery"), scene, SCENE_NOTES[scene] ?? ""),
+          seed: "docs",
+          options: { scene },
+        })),
+        ...DITHER_METHODS.map((method) => ({
+          canvas: figure(document.getElementById("method-gallery"), method, METHOD_NOTES[method] ?? ""),
+          seed: "docs",
+          options: { scene: "orbs", method },
+        })),
+        ...["my-seed", "halo-2", "halo-3"].map((seed) => ({
+          canvas: figure(document.getElementById("halo-gallery"), seed, "scene: halo"),
+          seed,
+          options: { scene: halo },
+        })),
+      ];
+
+      const drawAll = () => panels.forEach(({ canvas, seed, options }) => draw(canvas, seed, options));
+
+      let frame = 0;
+      let lastWidth = innerWidth;
+      addEventListener("resize", () => {
+        if (innerWidth === lastWidth) return;
+        lastWidth = innerWidth;
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(drawAll);
+      });
+      matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll);
+
+      /* ---------------------------------------------------------------- theme + contents */
+      const modes = ["system", "light", "dark"];
+      const themeButton = document.getElementById("theme");
+      let mode = localStorage.getItem("dither-art-theme") ?? "system";
+      const applyTheme = () => {
+        if (mode === "system") document.documentElement.removeAttribute("data-theme");
+        else document.documentElement.dataset.theme = mode;
+        themeButton.dataset.mode = mode;
+        themeButton.setAttribute("aria-label", `Colour theme: ${mode}`);
+        themeButton.title = `Colour theme: ${mode}`;
+      };
+      themeButton.onclick = () => {
+        mode = modes[(modes.indexOf(mode) + 1) % modes.length];
+        try {
+          localStorage.setItem("dither-art-theme", mode);
+        } catch {}
+        applyTheme();
+        drawAll();
+      };
+
+      // Mark the section being read in the contents column.
+      const links = new Map([...document.querySelectorAll(".toc a")].map((a) => [a.getAttribute("href").slice(1), a]));
+      const seen = new Set();
+      const spy = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) seen.add(entry.target.id);
+            else seen.delete(entry.target.id);
+          }
+          const first = [...links.keys()].find((id) => seen.has(id));
+          for (const [id, link] of links) link.classList.toggle("current", id === first);
+        },
+        { rootMargin: "0px 0px -60% 0px" },
+      );
+      for (const id of links.keys()) {
+        const section = document.getElementById(id);
+        if (section) spy.observe(section);
+      }
+
+      applyTheme();
+      drawAll();
+    </script>
+  </body>
+</html>

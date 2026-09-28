@@ -17,173 +17,8 @@
     <meta property="og:url" content="https://dither-art.momik.dev/" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM2 2h1v1H2zM1 3h1v1H1zM3 3h1v1H3z'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="base.css" />
     <style>
-      :root {
-        --paper: #f4f1ea;
-        --paper-sunk: #eeeae1;
-        --ink: #161513;
-        --muted: #6d6a63;
-        --line: #d9d4c8;
-        --field: #fffdf8;
-        --accent: #b8253c;
-        --code-key: #a02440;
-        --code-str: #4c6a37;
-        --code-num: #8a5713;
-        --code-fn: #1f4f6b;
-        --grain: 0.16;
-        --shadow: 0 1px 2px rgba(60, 52, 34, 0.05), 0 8px 24px -16px rgba(60, 52, 34, 0.25);
-        --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
-        --step: 160ms var(--ease-out);
-        color-scheme: light;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root:not([data-theme="light"]) {
-          --paper: #141412;
-          --paper-sunk: #100f0e;
-          --ink: #ece8de;
-          --muted: #9b978d;
-          --line: #34322d;
-          --field: #1c1b18;
-          --accent: #ff7484;
-          --code-key: #ff7484;
-          --code-str: #a8c98d;
-          --code-num: #d8a657;
-          --code-fn: #7fb4cc;
-          --grain: 0.19;
-          --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -16px rgba(0, 0, 0, 0.8);
-          color-scheme: dark;
-        }
-      }
-      :root[data-theme="dark"] {
-        --paper: #141412;
-        --paper-sunk: #100f0e;
-        --ink: #ece8de;
-        --muted: #9b978d;
-        --line: #34322d;
-        --field: #1c1b18;
-        --accent: #ff7484;
-        --code-key: #ff7484;
-        --code-str: #a8c98d;
-        --code-num: #d8a657;
-        --code-fn: #7fb4cc;
-        --grain: 0.19;
-        --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -16px rgba(0, 0, 0, 0.8);
-        color-scheme: dark;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      html {
-        scroll-behavior: smooth;
-        overflow-x: clip;
-      }
-      body {
-        margin: 0;
-        background: var(--paper);
-        color: var(--ink);
-        font: 15px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-        font-variant-numeric: tabular-nums;
-        -webkit-tap-highlight-color: transparent;
-      }
-      /* The page's own texture is the library's: one ink dot per 8px cell, the lattice a Bayer
-         threshold map draws from, fixed so it reads as paper the content moves over. */
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: 0;
-        pointer-events: none;
-        opacity: var(--grain);
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' shape-rendering='crispEdges'%3E%3Crect width='1' height='1' fill='%23808080'/%3E%3C/svg%3E");
-        background-size: 8px 8px;
-      }
-      .wrap {
-        position: relative;
-        z-index: 1;
-        max-width: 1040px;
-        margin: 0 auto;
-        padding: 0 16px;
-      }
-      a {
-        color: inherit;
-      }
-      .skip {
-        position: absolute;
-        left: 16px;
-        top: 8px;
-        padding: 8px 12px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--field);
-        transform: translateY(-200%);
-      }
-      .skip:focus {
-        transform: none;
-      }
-      nav {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px 20px;
-        padding: 20px 0;
-      }
-      nav strong {
-        font-size: 17px;
-        font-weight: 600;
-        letter-spacing: -0.01em;
-      }
-      .links {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 4px 18px;
-      }
-      .links a {
-        text-decoration: none;
-        color: var(--muted);
-        transition: color var(--step);
-      }
-      .links a:hover {
-        color: var(--ink);
-      }
-      .links .icon {
-        display: inline-grid;
-        place-items: center;
-        width: 32px;
-        height: 32px;
-        padding: 0;
-        color: var(--muted);
-      }
-      .links a.icon:hover,
-      #theme:hover {
-        color: var(--ink);
-      }
-      .links .icon svg {
-        width: 18px;
-        height: 18px;
-        display: block;
-      }
-      /* The npm mark is a wide, short glyph: at 18px it reads far lighter than the GitHub disc. */
-      .links .icon-npm svg {
-        width: 24px;
-        height: 24px;
-      }
-      /* It sits among plain links, so it drops the button chrome and signals state by colour. */
-      #theme {
-        background: none;
-        border-color: transparent;
-        border-radius: 9px;
-      }
-      /* One mark for all three states: an empty disc for light, a filled one for dark, half for system. */
-      #theme .half,
-      #theme .full {
-        display: none;
-      }
-      #theme[data-mode="system"] .half,
-      #theme[data-mode="dark"] .full {
-        display: block;
-      }
       canvas {
         display: block;
         width: 100%;
@@ -241,22 +76,6 @@
         content: "$ ";
         color: var(--muted);
       }
-      button,
-      .button {
-        font: inherit;
-        color: var(--ink);
-        background: var(--field);
-        border: 1px solid var(--line);
-        border-radius: 9px;
-        padding: 9px 14px;
-        cursor: pointer;
-        text-decoration: none;
-        transition:
-          border-color var(--step),
-          background-color var(--step),
-          color var(--step),
-          transform var(--step);
-      }
       .install button {
         padding: 3px 9px;
         font-size: 13px;
@@ -278,10 +97,6 @@
       button:active,
       .button:active {
         transform: translateY(1px);
-      }
-      :focus-visible {
-        outline: 2px solid var(--accent);
-        outline-offset: 2px;
       }
       .stage {
         --ratio: 0.36;
@@ -403,14 +218,6 @@
       .method {
         --ratio: 0.5;
       }
-      .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
-      }
       /* Full-bleed strip of other seeds. Constant linear motion, so it is a CSS animation on a
          transform: it keeps running off the main thread while the canvases below are being dithered. */
       .ticker {
@@ -460,38 +267,6 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
-      pre {
-        margin: 0;
-        padding: 20px;
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        background: var(--field);
-        overflow-x: auto;
-        font-size: 14px;
-        line-height: 1.6;
-      }
-      /* Four hues only: keyword, string, number, call. Everything else stays ink or muted. */
-      .tok-key {
-        color: var(--code-key);
-      }
-      .tok-str {
-        color: var(--code-str);
-      }
-      .tok-num {
-        color: var(--code-num);
-      }
-      .tok-fn {
-        color: var(--code-fn);
-      }
-      .tok-mut {
-        color: var(--muted);
-      }
-      /* The page is already monospace, so <code> only needs to inherit — the UA's monospace default
-         otherwise shifts its line box and drags the baselines of paragraphs that contain it. */
-      code {
-        font-family: inherit;
-        font-size: inherit;
-      }
       /* Asymmetric two-column list instead of a row of equal cards. */
       .features {
         display: grid;
@@ -539,49 +314,8 @@
           margin-top: 0;
         }
       }
-      /* The wrapper is a <nav>, which the header nav rule turns into a flex row; without this the
-         list becomes a shrink-to-fit flex item instead of spanning the column. */
-      .endnav {
-        display: block;
-        padding: 0;
-      }
-      .endlinks {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 9px;
-        margin-top: 80px;
-        padding: 26px 0;
-        border-top: 1px solid var(--line);
-        list-style: none;
-        text-align: right;
-        font-size: 14px;
-      }
-      .endlinks a {
-        text-decoration: none;
-        transition: color var(--step);
-      }
-      .endlinks a:hover {
-        color: var(--accent);
-      }
-      footer {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        gap: 4px 12px;
-        padding: 18px 0 48px;
-        border-top: 1px solid var(--line);
-        color: var(--muted);
-        font-size: 13px;
-      }
-      footer a:hover {
-        color: var(--accent);
-      }
       footer a {
         transition: color var(--step);
-      }
-      footer a:hover {
-        color: var(--ink);
       }
       .reveal {
         opacity: 0;
@@ -624,13 +358,13 @@
   <body>
     <a class="skip" href="#main">Skip to content</a>
     <div class="wrap">
-      <nav>
+      <nav class="topnav">
         <strong>dither-art</strong>
         <div class="links">
           <a href="#seeds">Scenes</a>
           <a href="#methods">Methods</a>
           <a href="playground/">Playground</a>
-          <a href="https://github.com/PG-Momik/dither-art#api">Docs</a>
+          <a href="docs/">Docs</a>
           <a class="icon icon-npm" href="https://www.npmjs.com/package/dither-art" aria-label="dither-art on npm" title="npm">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M0 7.334v8h6.666v1.332H12v-1.332h12v-8H0zm6.666 6.664H5.334v-4H3.999v4H1.335V8.667h5.331v5.331zm4 0v1.336H8.001V8.667h5.334v5.332h-2.669v-.001zm12.001 0h-1.33v-4h-1.336v4h-1.335v-4h-1.33v4h-2.671V8.667h8.002v5.331zM10.665 10H12v2.667h-1.335V10z" />
@@ -740,10 +474,10 @@ cover<span class="tok-mut">.</span>innerHTML <span class="tok-mut">=</span> <spa
         </section>
       </main>
 
-      <nav class="endnav" aria-label="Project links">
+      <nav aria-label="Project links">
         <ul class="endlinks">
           <li><a href="https://github.com/PG-Momik/dither-art">Source</a></li>
-          <li><a href="https://github.com/PG-Momik/dither-art#api">API docs</a></li>
+          <li><a href="docs/">API docs</a></li>
           <li><a href="https://github.com/PG-Momik/dither-art/blob/main/CHANGELOG.md">Changelog</a></li>
           <li><a href="https://github.com/PG-Momik/dither-art/issues">Report an issue</a></li>
         </ul>
