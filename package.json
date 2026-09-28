@@ -49,6 +49,7 @@
     "snapshot": "npm run build && node scripts/snapshot.mjs",
     "gallery": "npm run build && node scripts/gallery.mjs",
     "site": "npm run build && node -e \"require('fs').cpSync('dist', 'site/lib', { recursive: true })\"",
+    "deploy": "npm run site && npx wrangler@4 pages deploy site --project-name dither-art",
     "prepack": "npm run build",
     "prepublishOnly": "npm run typecheck && npm test && npm run snapshot"
   },
