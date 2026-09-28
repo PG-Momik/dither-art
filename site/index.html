@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>dither-art: 1-bit art from any string</title>
+    <meta
+      name="description"
+      content="Seeded, dithered 1-bit artwork for JavaScript. Mountains, seas, dunes, planets and more, drawn from any string. Zero dependencies."
+    />
+    <meta property="og:title" content="dither-art" />
+    <meta property="og:description" content="1-bit art from any string. Same seed, same picture." />
+    <meta property="og:image" content="https://pg-momik.github.io/dither-art/og.png" />
+    <meta property="og:url" content="https://pg-momik.github.io/dither-art/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h1v1H0zM2 0h1v1H2zM1 1h1v1H1zM3 1h1v1H3zM0 2h1v1H0zM2 2h1v1H2zM1 3h1v1H1zM3 3h1v1H3z'/%3E%3C/svg%3E" />
+    <style>
+      :root {
+        --paper: #f4f1ea;
+        --ink: #161513;
+        --muted: #6d6a63;
+        --line: #d9d4c8;
+        --field: #fffdf8;
+        --accent: #c41e3a;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #141412;
+          --ink: #ece8de;
+          --muted: #9b978d;
+          --line: #34322d;
+          --field: #1c1b18;
+          --accent: #ff5a6e;
+          color-scheme: dark;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font: 15px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+      a {
+        color: inherit;
+      }
+      .wrap {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 0 16px;
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px 20px;
+        padding: 20px 0;
+      }
+      nav strong {
+        font-size: 17px;
+      }
+      nav div {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 18px;
+      }
+      nav div a {
+        text-decoration: none;
+        color: var(--muted);
+      }
+      nav div a:hover {
+        color: var(--ink);
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: auto;
+        image-rendering: pixelated;
+      }
+      .hero {
+        padding: 36px 0 12px;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(30px, 6vw, 56px);
+        line-height: 1.05;
+        letter-spacing: -0.03em;
+      }
+      .lede {
+        max-width: 620px;
+        margin: 16px 0 24px;
+        color: var(--muted);
+        font-size: 16px;
+      }
+      .cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+      .install {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 9px 10px 9px 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--field);
+      }
+      .install code::before {
+        content: "$ ";
+        color: var(--muted);
+      }
+      button,
+      .button {
+        font: inherit;
+        color: var(--ink);
+        background: var(--field);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 14px;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .install button {
+        padding: 3px 9px;
+        font-size: 13px;
+      }
+      .button.primary {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+      }
+      button:hover,
+      .button:hover {
+        border-color: var(--muted);
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .stage {
+        margin-top: 36px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--paper);
+      }
+      .caption {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 10px 14px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .caption button {
+        padding: 2px 10px;
+        font-size: 13px;
+      }
+      section {
+        padding: 56px 0 8px;
+      }
+      h2 {
+        margin: 0 0 6px;
+        font-size: 20px;
+        letter-spacing: -0.01em;
+      }
+      .sub {
+        margin: 0 0 20px;
+        color: var(--muted);
+      }
+      .seed {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .seed input {
+        flex: 1;
+        max-width: 360px;
+        min-width: 0;
+        font: inherit;
+        font-size: 16px;
+        color: var(--ink);
+        background: var(--field);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 9px 12px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .methods {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+      @media (max-width: 720px) {
+        .grid,
+        .methods {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+      figure {
+        margin: 0;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      figcaption {
+        padding: 6px 10px;
+        border-top: 1px solid var(--line);
+        font-size: 13px;
+      }
+      figcaption span {
+        color: var(--muted);
+      }
+      pre {
+        margin: 0;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--field);
+        overflow-x: auto;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      .c {
+        color: var(--muted);
+      }
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+      }
+      .features div {
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+      }
+      .features h3 {
+        margin: 0 0 4px;
+        font-size: 15px;
+      }
+      .features p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      footer {
+        margin-top: 64px;
+        padding: 24px 0 40px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <nav>
+        <strong>dither-art</strong>
+        <div>
+          <a href="playground/">Playground</a>
+          <a href="https://github.com/PG-Momik/dither-art#api">Docs</a>
+          <a href="https://www.npmjs.com/package/dither-art">npm</a>
+          <a href="https://github.com/PG-Momik/dither-art">GitHub</a>
+        </div>
+      </nav>
+
+      <header class="hero">
+        <h1>1-bit art from any&nbsp;string.</h1>
+        <p class="lede">
+          Give every user, post or product its own dithered cover art, drawn from a seed. The same seed always gives
+          the same picture, so there is nothing to store. Six scenes, four dithering methods, zero dependencies.
+        </p>
+        <div class="cta">
+          <span class="install"><code>npm install dither-art</code><button type="button" id="copy">Copy</button></span>
+          <a class="button primary" href="playground/">Open the playground</a>
+        </div>
+        <div class="stage">
+          <canvas id="hero" role="img" aria-label="A dithered picture drawn from a random seed"></canvas>
+          <div class="caption">
+            <span id="hero-info"></span>
+            <button type="button" id="reroll">New seed</button>
+          </div>
+        </div>
+      </header>
+
+      <section>
+        <h2>Type a seed</h2>
+        <p class="sub">Every scene, drawn from whatever you type. Try your name.</p>
+        <label class="seed"><input id="seed" value="hello world" spellcheck="false" aria-label="Seed" /></label>
+        <div class="grid" id="scenes"></div>
+      </section>
+
+      <section>
+        <h2>Four ways to dither</h2>
+        <p class="sub">The same picture, turned into 1-bit pixels by each method.</p>
+        <div class="grid methods" id="methods"></div>
+      </section>
+
+      <section>
+        <h2>Three lines to use it</h2>
+        <p class="sub">Ink is <code>currentColor</code>, so the art follows your theme and dark mode.</p>
+        <pre><code><span class="c">import</span> { ditherPixels, toSVG } <span class="c">from</span> "dither-art";
+
+<span class="c">const</span> pixels = ditherPixels(320, 180, user.id);
+cover.innerHTML = toSVG(pixels, 320, 180, { scale: 2 });</code></pre>
+      </section>
+
+      <section>
+        <div class="features">
+          <div>
+            <h3>Deterministic</h3>
+            <p>Pixel-identical on Node, Bun, Deno and browsers. Pictures are pinned by tests, so they never change within a major version.</p>
+          </div>
+          <div>
+            <h3>SVG, canvas or server</h3>
+            <p><code>toSVG</code> for HTML and image routes, <code>toRGBA</code> for canvas. Runs anywhere JavaScript does.</p>
+          </div>
+          <div>
+            <h3>Bring your own</h3>
+            <p>Dither your own images with <code>dither()</code>, or write a custom scene in a few lines.</p>
+          </div>
+          <div>
+            <h3>Tiny</h3>
+            <p>About 6 KB minified and gzipped. No dependencies. TypeScript types included.</p>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        MIT licensed ·
+        <a href="https://github.com/PG-Momik/dither-art">Source</a> ·
+        <a href="https://github.com/PG-Momik/dither-art#api">API docs</a> ·
+        <a href="https://github.com/PG-Momik/dither-art/blob/main/CHANGELOG.md">Changelog</a>
+      </footer>
+    </div>
+
+    <script type="module">
+      import { ditherPixels, sceneForSeed, toRGBA, DITHER_SCENES, DITHER_METHODS } from "./lib/index.js";
+
+      const theme = () => {
+        const css = getComputedStyle(document.documentElement);
+        return { ink: css.getPropertyValue("--ink").trim(), paper: css.getPropertyValue("--paper").trim() };
+      };
+
+      /** Draws into a canvas at half its displayed width, so every art pixel is exactly 2x2 CSS pixels. */
+      const draw = (canvas, seed, options = {}, ratio) => {
+        const width = Math.max(40, Math.floor(canvas.parentElement.clientWidth / 2));
+        const height = Math.round(width * ratio);
+        const pixels = ditherPixels(width, height, seed, options);
+        canvas.width = width;
+        canvas.height = height;
+        const { ink, paper } = theme();
+        canvas.getContext("2d").putImageData(new ImageData(toRGBA(pixels, { ink, paper }), width, height), 0, 0);
+      };
+
+      const words = ["moss", "ember", "tide", "quartz", "harbor", "lumen", "cinder", "fjord", "orbit", "sable", "dune", "zephyr"];
+      const randomSeed = () => `${words[Math.floor(Math.random() * words.length)]}-${Math.floor(Math.random() * 1000)}`;
+
+      const hero = document.getElementById("hero");
+      let heroSeed = randomSeed();
+      const drawHero = () => {
+        draw(hero, heroSeed, {}, innerWidth < 600 ? 0.6 : 0.36);
+        document.getElementById("hero-info").textContent = `seed "${heroSeed}" · ${sceneForSeed(heroSeed)}`;
+      };
+      document.getElementById("reroll").onclick = () => {
+        heroSeed = randomSeed();
+        drawHero();
+      };
+
+      const figure = (container, label, note) => {
+        const fig = document.createElement("figure");
+        const canvas = document.createElement("canvas");
+        const caption = document.createElement("figcaption");
+        caption.append(label, " ");
+        const span = document.createElement("span");
+        span.textContent = note;
+        caption.append(span);
+        fig.append(canvas, caption);
+        container.append(fig);
+        return canvas;
+      };
+      const sceneCanvases = DITHER_SCENES.map((scene) => figure(document.getElementById("scenes"), scene, ""));
+      const methodCanvases = DITHER_METHODS.map((method) =>
+        figure(document.getElementById("methods"), method, method === "bayer" ? "(default)" : ""),
+      );
+
+      const input = document.getElementById("seed");
+      const drawScenes = () => sceneCanvases.forEach((c, i) => draw(c, input.value, { scene: DITHER_SCENES[i] }, 0.6));
+      const drawMethods = () => methodCanvases.forEach((c, i) => draw(c, "moss", { scene: "orbs", method: DITHER_METHODS[i] }, 0.7));
+      const drawAll = () => {
+        drawHero();
+        drawScenes();
+        drawMethods();
+      };
+
+      let frame = 0;
+      const later = (fn) => {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(fn);
+      };
+      input.addEventListener("input", () => later(drawScenes));
+      let lastWidth = innerWidth;
+      addEventListener("resize", () => {
+        if (innerWidth === lastWidth) return;
+        lastWidth = innerWidth;
+        later(drawAll);
+      });
+      matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll);
+
+      document.getElementById("copy").onclick = async (event) => {
+        try {
+          await navigator.clipboard.writeText("npm install dither-art");
+          event.target.textContent = "Copied";
+        } catch {
+          event.target.textContent = "Copy failed";
+        }
+        setTimeout(() => (event.target.textContent = "Copy"), 1500);
+      };
+
+      drawAll();
+    </script>
+  </body>
+</html>

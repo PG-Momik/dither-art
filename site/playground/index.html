@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Playground · dither-art</title>
+    <meta name="description" content="Seeded 1-bit dithered artwork, drawn from any string." />
+    <style>
+      :root {
+        --paper: #f4f1ea;
+        --ink: #161513;
+        --muted: #6d6a63;
+        --line: #d9d4c8;
+        --field: #fffdf8;
+        --accent: #c41e3a;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #141412;
+          --ink: #ece8de;
+          --muted: #9b978d;
+          --line: #34322d;
+          --field: #1c1b18;
+          --accent: #ff5a6e;
+          color-scheme: dark;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font: 15px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 16px 64px;
+      }
+      header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px 24px;
+        margin-bottom: 24px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -0.01em;
+      }
+      header p {
+        margin: 0;
+        color: var(--muted);
+      }
+      a {
+        color: inherit;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 24px;
+        align-items: start;
+      }
+      @media (max-width: 760px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+      .layout > *,
+      .row > *,
+      .seed > * {
+        min-width: 0;
+      }
+      form {
+        display: grid;
+        gap: 14px;
+      }
+      label {
+        display: grid;
+        gap: 4px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+      }
+      input,
+      select,
+      button {
+        font: inherit;
+        color: var(--ink);
+        background: var(--field);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 7px 9px;
+        text-transform: none;
+        letter-spacing: normal;
+        width: 100%;
+        min-width: 0;
+      }
+      .actions button,
+      #shuffle {
+        width: auto;
+      }
+      input[type="range"] {
+        padding: 0;
+        accent-color: var(--accent);
+      }
+      input[type="color"] {
+        padding: 2px;
+        height: 36px;
+        width: 100%;
+      }
+      button {
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: var(--muted);
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .seed {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px;
+      }
+      .stage {
+        display: grid;
+        place-items: center;
+        min-height: 240px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--field);
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        image-rendering: pixelated;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      pre {
+        margin: 16px 0 0;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--field);
+        overflow-x: auto;
+        font-size: 13px;
+      }
+      h2 {
+        margin: 40px 0 12px;
+        font-size: 15px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 10px;
+      }
+      .grid button {
+        padding: 0;
+        overflow: hidden;
+        background: none;
+        text-align: left;
+      }
+      .grid canvas {
+        width: 100%;
+      }
+      .grid span {
+        display: block;
+        padding: 4px 8px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1><a href="../" style="text-decoration: none">dither-art</a> / playground</h1>
+        <p><a href="../">Home</a> · <a href="https://github.com/PG-Momik/dither-art#api">Docs</a> · <a href="https://github.com/PG-Momik/dither-art">GitHub</a></p>
+      </header>
+
+      <div class="layout">
+        <form id="controls" autocomplete="off">
+          <label
+            >Seed
+            <span class="seed">
+              <input name="seed" value="dither-art" spellcheck="false" />
+              <button type="button" id="shuffle" title="Random seed">↻</button>
+            </span>
+          </label>
+          <label>Scene <select name="scene"></select></label>
+          <label>Method <select name="method"></select></label>
+          <label>Density <input name="density" type="range" min="0.2" max="1.8" step="0.05" value="1" /></label>
+          <div class="row">
+            <label>Width <input name="width" type="number" min="16" max="1600" value="320" /></label>
+            <label>Height <input name="height" type="number" min="16" max="1600" value="180" /></label>
+          </div>
+          <label>Pixel size <input name="scale" type="range" min="1" max="6" step="1" value="2" /></label>
+          <div class="row">
+            <label>Ink <input name="ink" type="color" value="#161513" /></label>
+            <label>Paper <input name="paper" type="color" value="#f4f1ea" /></label>
+          </div>
+        </form>
+
+        <section>
+          <div class="stage"><canvas id="art" aria-label="Generated artwork"></canvas></div>
+          <div class="meta">
+            <span id="info"></span>
+            <span class="actions">
+              <button type="button" id="svg">Download SVG</button>
+              <button type="button" id="png">Download PNG</button>
+            </span>
+          </div>
+          <pre><code id="code"></code></pre>
+        </section>
+      </div>
+
+      <h2>More seeds</h2>
+      <div class="grid" id="grid"></div>
+    </main>
+
+    <script type="module">
+      import { ditherPixels, sceneForSeed, toRGBA, toSVG, DITHER_SCENES, DITHER_METHODS } from "../lib/index.js";
+
+      const form = document.getElementById("controls");
+      const canvas = document.getElementById("art");
+      const fill = (select, values, first) => {
+        select.innerHTML = (first ? `<option value="">${first}</option>` : "") + values.map((v) => `<option>${v}</option>`).join("");
+      };
+      fill(form.scene, DITHER_SCENES, "from seed");
+      fill(form.method, DITHER_METHODS);
+
+      const params = new URLSearchParams(location.hash.slice(1));
+      for (const [key, value] of params) if (form[key]) form[key].value = value;
+
+      const read = () => {
+        const f = new FormData(form);
+        const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, Math.floor(Number(v)) || lo));
+        return {
+          seed: f.get("seed"),
+          scene: f.get("scene") || undefined,
+          method: f.get("method"),
+          density: Number(f.get("density")),
+          width: clamp(f.get("width"), 16, 1600),
+          height: clamp(f.get("height"), 16, 1600),
+          scale: Number(f.get("scale")),
+          ink: f.get("ink"),
+          paper: f.get("paper"),
+        };
+      };
+
+      const paint = (target, pixels, width, height, ink, paper) => {
+        target.width = width;
+        target.height = height;
+        target.getContext("2d").putImageData(new ImageData(toRGBA(pixels, { ink, paper }), width, height), 0, 0);
+      };
+
+      let current;
+      const render = () => {
+        const o = read();
+        const options = { method: o.method, density: o.density, ...(o.scene && { scene: o.scene }) };
+        const start = performance.now();
+        const pixels = ditherPixels(o.width, o.height, o.seed, options);
+        const ms = performance.now() - start;
+        paint(canvas, pixels, o.width, o.height, o.ink, o.paper);
+        canvas.style.width = `${o.width * o.scale}px`;
+        current = { ...o, pixels };
+        const scene = o.scene ?? sceneForSeed(o.seed);
+        document.getElementById("info").textContent = `${scene} · ${o.width}×${o.height} · ${ms.toFixed(0)} ms`;
+        const shown = { ...(o.scene && { scene: o.scene }), ...(o.method !== "bayer" && { method: o.method }), ...(o.density !== 1 && { density: o.density }) };
+        const entries = Object.entries(shown).map(([k, v]) => `${k}: ${JSON.stringify(v)}`);
+        const opts = entries.length ? `, { ${entries.join(", ")} }` : "";
+        document.getElementById("code").textContent =
+          `import { ditherPixels, toSVG } from "dither-art";\n\n` +
+          `const pixels = ditherPixels(${o.width}, ${o.height}, ${JSON.stringify(o.seed)}${opts});\n` +
+          `const svg = toSVG(pixels, ${o.width}, ${o.height}, { ink: "${o.ink}", scale: ${o.scale} });`;
+        history.replaceState(null, "", `#${new URLSearchParams(Object.fromEntries(new FormData(form)))}`);
+      };
+
+      const download = (blob, name) => {
+        const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: name });
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+      const fileName = (ext) => `${current.seed.replace(/[^\w-]+/g, "-") || "dither"}.${ext}`;
+      document.getElementById("svg").onclick = () => {
+        const { pixels, width, height, ink, paper, scale } = current;
+        download(new Blob([toSVG(pixels, width, height, { ink, paper, scale })], { type: "image/svg+xml" }), fileName("svg"));
+      };
+      document.getElementById("png").onclick = () => {
+        const { pixels, width, height, ink, paper, scale } = current;
+        const big = document.createElement("canvas");
+        big.width = width * scale;
+        big.height = height * scale;
+        const ctx = big.getContext("2d");
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(canvas, 0, 0, big.width, big.height);
+        big.toBlob((blob) => download(blob, fileName("png")));
+      };
+
+      const words = ["moss", "ember", "tide", "quartz", "harbor", "lumen", "cinder", "fjord", "orbit", "sable", "dune", "zephyr"];
+      const randomSeed = () => `${words[Math.floor(Math.random() * words.length)]}-${Math.floor(Math.random() * 1000)}`;
+      document.getElementById("shuffle").onclick = () => {
+        form.seed.value = randomSeed();
+        render();
+      };
+
+      const grid = document.getElementById("grid");
+      const fillGrid = () => {
+        const { ink, paper } = read();
+        grid.replaceChildren(
+          ...Array.from({ length: 12 }, () => {
+            const seed = randomSeed();
+            const button = document.createElement("button");
+            button.type = "button";
+            const thumb = document.createElement("canvas");
+            paint(thumb, ditherPixels(200, 120, seed), 200, 120, ink, paper);
+            const label = document.createElement("span");
+            label.textContent = `${seed} · ${sceneForSeed(seed)}`;
+            button.append(thumb, label);
+            button.onclick = () => {
+              form.seed.value = seed;
+              form.scene.value = "";
+              render();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            };
+            return button;
+          }),
+        );
+      };
+
+      form.addEventListener("input", render);
+      form.addEventListener("submit", (e) => e.preventDefault());
+      render();
+      fillGrid();
+    </script>
+  </body>
+</html>
