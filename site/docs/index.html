@@ -35,14 +35,15 @@
         font-size: 13px;
       }
       .toc h2 {
-        margin: 0 0 10px;
-        font-size: 12px;
-        letter-spacing: 0.1em;
+        margin: 0 0 11px;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
-        color: var(--muted);
+        color: var(--ink);
       }
       .toc ul {
-        margin: 0 0 18px;
+        margin: 0 0 22px;
         padding: 0;
         list-style: none;
       }
@@ -667,44 +668,11 @@ const svg = toSVG(ditherPixels(320, 180, seed), 320, 180, { scale: 4 });</code><
 
     <script type="module">
       import { ditherPixels, toRGBA, DITHER_SCENES, DITHER_METHODS } from "../lib/index.js";
+      import { highlightElement, escapeHtml } from "../highlight.js";
 
-      /* ---------------------------------------------------------------- code colouring
-         The landing page marks its one snippet up by hand; a reference page has twenty, so
-         they are tokenised here instead. Comments and strings are matched first, so a // or
-         a keyword inside a string is never mistaken for code. */
-      const KEYWORDS = new Set([
-        "import", "export", "from", "const", "let", "var", "function", "return", "new", "type",
-        "interface", "await", "async", "if", "else", "for", "of", "in", "typeof", "as", "default",
-        "class", "extends", "throw", "try", "catch", "readonly",
-      ]);
-      const TOKEN =
-        /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|(`(?:\\.|[^`\\])*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|(\b\d+(?:\.\d+)?\b)|([A-Za-z_$][\w$]*)|([{}()[\];,.:=<>+\-*/!?&|%])/g;
-      const escape = (text) => text.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
-      const wrap = (cls, text) => `<span class="${cls}">${escape(text)}</span>`;
-
-      const highlight = (source) => {
-        let out = "";
-        let last = 0;
-        for (const match of source.matchAll(TOKEN)) {
-          const [text, comment, string, number, word, punctuation] = match;
-          out += escape(source.slice(last, match.index));
-          last = match.index + text.length;
-          if (comment) out += wrap("tok-mut", text);
-          else if (string) out += wrap("tok-str", text);
-          else if (number) out += wrap("tok-num", text);
-          else if (word) {
-            const isCall = source[last] === "(";
-            out += KEYWORDS.has(word) ? wrap("tok-key", text) : isCall ? wrap("tok-fn", text) : escape(text);
-          } else if (punctuation) out += wrap("tok-mut", text);
-        }
-        return out + escape(source.slice(last));
-      };
-
-      for (const block of document.querySelectorAll("code.lang-ts, code.lang-js, .sig")) {
-        block.innerHTML = highlight(block.textContent);
-      }
+      for (const block of document.querySelectorAll("code.lang-ts, code.lang-js, .sig")) highlightElement(block);
       for (const block of document.querySelectorAll("code.lang-bash")) {
-        block.innerHTML = `<span class="tok-mut">$ </span>${escape(block.textContent)}`;
+        block.innerHTML = `<span class="tok-mut">$ </span>${escapeHtml(block.textContent)}`;
       }
 
       /* ---------------------------------------------------------------- live pictures */

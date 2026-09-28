@@ -13,6 +13,10 @@
         --line: #d9d4c8;
         --field: #fffdf8;
         --accent: #c41e3a;
+        --code-key: #a02440;
+        --code-str: #4c6a37;
+        --code-num: #8a5713;
+        --code-fn: #1f4f6b;
         color-scheme: light;
       }
       @media (prefers-color-scheme: dark) {
@@ -23,6 +27,10 @@
           --line: #34322d;
           --field: #1c1b18;
           --accent: #ff5a6e;
+          --code-key: #ff7484;
+          --code-str: #a8c98d;
+          --code-num: #d8a657;
+          --code-fn: #7fb4cc;
           color-scheme: dark;
         }
       }
@@ -167,6 +175,21 @@
         flex-wrap: wrap;
         gap: 8px;
       }
+      .tok-key {
+        color: var(--code-key);
+      }
+      .tok-str {
+        color: var(--code-str);
+      }
+      .tok-num {
+        color: var(--code-num);
+      }
+      .tok-fn {
+        color: var(--code-fn);
+      }
+      .tok-mut {
+        color: var(--muted);
+      }
       pre {
         margin: 16px 0 0;
         padding: 14px;
@@ -251,6 +274,7 @@
 
     <script type="module">
       import { ditherPixels, sceneForSeed, toRGBA, toSVG, DITHER_SCENES, DITHER_METHODS } from "../lib/index.js";
+      import { highlight } from "../highlight.js";
 
       const form = document.getElementById("controls");
       const canvas = document.getElementById("art");
@@ -300,10 +324,11 @@
         const shown = { ...(o.scene && { scene: o.scene }), ...(o.method !== "bayer" && { method: o.method }), ...(o.density !== 1 && { density: o.density }) };
         const entries = Object.entries(shown).map(([k, v]) => `${k}: ${JSON.stringify(v)}`);
         const opts = entries.length ? `, { ${entries.join(", ")} }` : "";
-        document.getElementById("code").textContent =
+        document.getElementById("code").innerHTML = highlight(
           `import { ditherPixels, toSVG } from "dither-art";\n\n` +
           `const pixels = ditherPixels(${o.width}, ${o.height}, ${JSON.stringify(o.seed)}${opts});\n` +
-          `const svg = toSVG(pixels, ${o.width}, ${o.height}, { ink: "${o.ink}", scale: ${o.scale} });`;
+          `const svg = toSVG(pixels, ${o.width}, ${o.height}, { ink: "${o.ink}", scale: ${o.scale} });`,
+        );
         history.replaceState(null, "", `#${new URLSearchParams(Object.fromEntries(new FormData(form)))}`);
       };
 
