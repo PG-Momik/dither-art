@@ -1,6 +1,6 @@
 # Cloudflare Pages response headers.
 # The library files under /lib are rebuilt with the same names on every deploy, so they must not be
-# cached as immutable — a visitor would keep running the previous build. Ten minutes is long enough
+# cached as immutable; a visitor would keep running the previous build. Ten minutes is long enough
 # to help repeat views and short enough that a deploy lands quickly.
 /lib/*
   Cache-Control: public, max-age=600

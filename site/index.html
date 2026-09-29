@@ -528,7 +528,7 @@ cover<span class="tok-mut">.</span>innerHTML <span class="tok-mut">=</span> <spa
       };
       const easeOut = cubicBezier(0.23, 1, 0.32, 1);
 
-      /** The 8x8 ordered-dither threshold at a pixel — the same matrix the library dithers with. */
+      /** The 8x8 ordered-dither threshold at a pixel: the same matrix the library dithers with. */
       const bayerAt = (x, y) => BAYER[(y & 7) * 8 + (x & 7)];
 
       const theme = () => {
@@ -593,7 +593,7 @@ cover<span class="tok-mut">.</span>innerHTML <span class="tok-mut">=</span> <spa
           const rgba = toRGBA(ditherPixels(width, height, seed, options), theme());
           return new Uint32Array(rgba.buffer);
         };
-        /** A full sheet of paper, in one fill — no dithering needed. */
+        /** A full sheet of paper, in one fill; no dithering needed. */
         const blank = () => {
           const rgba = toRGBA(new Uint8Array(width * height), theme());
           return new Uint32Array(rgba.buffer).slice();
@@ -684,7 +684,7 @@ cover<span class="tok-mut">.</span>innerHTML <span class="tok-mut">=</span> <spa
         planet: "a lit disc in space",
       };
       const METHOD_NOTES = {
-        bayer: "ordered 8x8 grid — the default, crisp and cheap",
+        bayer: "ordered 8x8 grid: the default, crisp and cheap",
         "blue-noise": "scattered threshold, no visible grid",
         "floyd-steinberg": "error diffusion, finest detail",
         atkinson: "diffusion with less spill, high contrast",
