@@ -386,7 +386,7 @@ document.querySelector("#cover").innerHTML = svg;</code></pre>
                 <b>Returns</b> a <code>Uint8Array</code> of <code>width * height</code> values, row by row:
                 <code>1</code> is ink, <code>0</code> is paper.<br />
                 <b>Throws</b> <code>RangeError</code> for a non-finite size, and <code>TypeError</code> for an unknown
-                scene or method name — the message lists the valid ones.
+                scene or method name; the message lists the valid ones.
               </p>
             </div>
           </section>
@@ -447,7 +447,7 @@ ctx.putImageData(new ImageData(rgba, width, height), 0, 0);</code></pre>
               </p>
               <p class="returns">
                 <b>Throws</b> <code>RangeError</code> when <code>ink.length</code> is not
-                <code>width * height</code> — the message states both numbers.
+                <code>width * height</code>; the message states both numbers.
               </p>
             </div>
           </section>

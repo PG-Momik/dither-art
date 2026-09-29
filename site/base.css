@@ -1,4 +1,4 @@
-/* dither-art — shared foundation for every page on the site.
+/* dither-art: shared foundation for every page on the site.
    Tokens, texture, navbar, buttons, code colours and the footer live here so the
    landing page, the docs and anything added later cannot drift apart. */
 
@@ -260,7 +260,7 @@ pre {
   color: var(--muted);
 }
 
-/* The page is already monospace, so <code> only needs to inherit — the UA's monospace default
+/* The page is already monospace, so <code> only needs to inherit; the UA's monospace default
    otherwise shifts its line box and drags the baselines of paragraphs that contain it. */
 code {
   font-family: inherit;
